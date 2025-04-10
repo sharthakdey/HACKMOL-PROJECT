@@ -1,0 +1,51 @@
+<div class="video-container">
+  <video id="video" controls>
+    <source src="{{ url_for('static', filename='uploads/' + video_filename) }}" type="video/mp4">
+  </video>
+</div>
+
+<div id="subtitle" class="caption-box"></div>
+
+
+
+<style>
+   body {
+    background-color: rgb(209, 227, 233); 
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+   }
+  .video-container {
+    max-width: 950px;     /* or any fixed width you prefer */
+    width: 100%;
+    margin: 0 auto;       /* center horizontally */
+    /* padding-bottom: 30px; */
+    padding: 8px;
+    background-color: rgb(188, 221, 234);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgb(97, 198, 231);
+  }
+
+  .video-container video {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+</style>
+
+
+<script>
+  // const transcript = {{ transcript|tojson }};
+  const video = document.getElementById('video');
+  const subtitleDiv = document.getElementById('subtitle');
+
+  video.ontimeupdate = () => {
+    const currentTime = video.currentTime * 1000; // Convert to milliseconds
+    const word = transcript.find(w => currentTime >= w.start && currentTime <= w.end);
+    if (word) {
+      subtitleDiv.textContent = word.text;
+    } else {
+      subtitleDiv.textContent = '';
+    }
+  };
+</script>

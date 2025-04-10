@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Video</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url("{{ url_for('static', filename='img/about.jpg') }}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffffff;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        }
+
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.9); /* slight transparency */
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        select, textarea, input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        .styled-button {
+            background-color: #4f46e5;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        .styled-button:hover {
+            background-color: #4338ca;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload Recorded Video</h1>
+    <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+        <label>Select Subject:</label>
+        <select name="subject" required>
+            <option value="Math">Math</option>
+            <option value="Physics">Physics</option>
+            <option value="Bio">Bio</option>
+            <option value="English">English</option>
+            <option value="Chemistry">Chemistry</option>
+        </select>
+
+        <label>Enter Content:</label>
+        <textarea name="content" id="content" placeholder="Enter content"></textarea>
+
+        <label>Upload Video:</label>
+        <input type="file" name="video" accept="video/*">
+
+        <label>Upload PDF:</label>
+        <input type="file" name="pdf" accept="application/pdf">
+
+        <button type="submit" class="styled-button">Submit</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,129 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  body {
+    background-color: #0e1a1a;
+    color: #fff;
+  }
+  
+  .header {
+    background-color: rgba(98, 167, 177, 0.781);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+  }
+  
+  .logo {
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .nav a {
+    color: white;
+    margin: 0 15px;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .banner {
+    background: url('https://images.unsplash.com/photo-1605727216800-d30bfbec6efb') no-repeat center center/cover;
+    height: 250px;
+    display: flex;
+    align-items: flex-end;
+    padding: 30px 40px;
+    position: relative;
+  }
+  
+  .profile {
+    background-color: rgba(98, 167, 177, 0.781);
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  }
+  
+  .avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+  }
+  
+  .info h2 {
+    margin-bottom: 5px;
+  }
+  
+  .meta {
+    margin-left: auto;
+    text-align: right;
+    font-size: 14px;
+  }
+  .meta span {
+    display: block;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 5px;
+  }
+  
+  .meta span:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+    color: #ffefc4;
+  }
+  
+  
+  .content {
+    padding: 40px;
+  }
+  
+  .card {
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(98, 167, 177, 0.4);
+  }
+  
+
+  .banner {
+    background-color: #2c3e50;
+    padding: 20px;
+    color: white;
+  }
+  
+  .profile {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+  }
+  
+  .card {
+    background-color: #34495e;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+  
+  .uploaded-content {
+    background-color: #2c3e50;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  

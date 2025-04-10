@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% block content %}
+  
+  <title>{{ subject }} Course</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 2rem;
+      color: #333;
+    }
+  
+    h2 {
+      margin-bottom: 2rem;
+      font-size: 2rem;
+      color: #2c3e50;
+      text-align: center;
+    }
+    /* width and ht */
+    .pair-card video,
+    .pair-card img {
+    width: 280px;         
+    height: 180px;        
+    border-radius: 10px;
+    object-fit: cover;    
+    background-color: #000; 
+  }
+
+  
+    .pair-card {
+      position: relative;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      align-items: flex-start;
+      transition: transform 0.2s ease-in-out;
+    }
+  
+    .pair-card:hover {
+      transform: scale(1.01);
+    }
+  
+    .pair-card video,
+    .pair-card img {
+      width: 320px;
+      max-width: 100%;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+  
+    .pdf-audio-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+  
+    .pdf-link {
+      background-color: rgba(182, 225, 230, 0.781);
+      padding: 1rem;
+      border-left: 5px solid #6fa0a4;
+      ;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 1rem;
+    }
+  
+    .pdf-link a {
+      text-decoration: none;
+      color: #333;
+      word-break: break-word;
+    }
+  
+    .audio-btn,
+    .pdf-link form button {
+      background-color: rgba(98, 167, 177, 0.781);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.95rem;
+      transition: background-color 0.3s ease;
+    }
+  
+    .audio-btn:hover,
+    .pdf-link form button:hover {
+      background-color: #00C4D6;
+    }
+  
+    p {
+      margin: 0.5rem 0 0;
+      font-size: 0.95rem;
+    }
+    
+    .bookmark-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #ccc;
+  transition: color 0.3s ease;
+}
+
+.bookmark-btn:hover {
+  color: #f39c12;
+}
+
+
+
+    @media (max-width: 768px) {
+      .pair-card {
+        flex-direction: column;
+        align-items: center;
+      }
+  
+      .pair-card video,
+      .pair-card img {
+        width: 100%;
+      }
+  
+      .pdf-audio-container {
+        width: 100%;
+      }
+    }
+
+  </style>
+  
+</head>
+<body>
+  <div style="padding: 50px;">
+    <h2>{{ subject }} Course Content</h2>
+  </div>
+  <form method="GET" action="{{ url_for('single_course') }}">
+    <input type="hidden" name="course" value="{{ subject }}">
+    <input type="text" name="search" placeholder="Search by description..." value="{{ request.args.get('search', '') }}" style="padding: 10px; width: 300px;">
+    <button type="button" id="VSB" title="Speak your search" style="margin-left: 10px;">🎙</button>
+    <button type="submit">Search</button>
+  </form>
+  
+  {% for video, pdf in paired_content %}
+  <div class="pair-card">
+    <div>
+      <a href="{{ url_for('play_video', filename=video.filename) }}">
+        <video>
+          <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4">
+        </video>      
+      </a>
+    </div>
+    <div>
+      <div class="pdf-audio-container">
+        <div class="pdf-link">
+          <a href="{{ url_for('static', filename='uploads/' + pdf.filename) }}" target="_blank">
+            📄 {{ pdf.filename }}
+          </a>
+          <form action="{{ url_for('convert_to_audio') }}" method="POST" style="display:inline;">
+            <input type="hidden" name="pdf_filename" value="{{ pdf.filename }}">
+            <button type="submit" style="margin-top: 1rem;">🎤 Convert Notes to Audio</button>
+            <button class="bookmark-btn" type="submit" title="Bookmark this content">📌</button>
+          </form>
+        </div>
+      </div>
+      <p style="margin-top: 1rem;"><strong>Description:</strong> {{ video.content }}</p>
+    </div>
+  </div>
+  <script>
+  //   const VSB = document.getElementById('VSB');  // 🎙 mic button
+  //   const SB = document.querySelector('input[name="search"]');  // search input
+  
+  //   const RecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+  
+  //   if (RecognitionAPI) {
+  //     const recognizer = new RecognitionAPI();
+  //     recognizer.continuous = false;
+  //     recognizer.lang = 'en-US';
+  
+  //     recognizer.onresult = function(event) {
+  //       const transcript = event.results[0][0].transcript;
+  //       SB.value = transcript;
+  
+  //       // ✅ Auto submit the form
+  //       SB.closest('form').submit();
+  //     };
+  
+  //     recognizer.onerror = function(event) {
+  //       alert('Voice recognition error: ' + event.error);
+  //     };
+  
+  //     function triggerVoiceSearch() {
+  //       recognizer.start();
+  //     }
+  
+  //     // ✅ Mic button click
+  //     VSB.addEventListener('click', triggerVoiceSearch);
+  
+  //     // ✅ Keyboard shortcut: Alt + A
+  //     document.addEventListener('keydown', function(e) {
+  //       if (e.altKey && e.key.toLowerCase() === 'a') {
+  //         e.preventDefault();
+  //         triggerVoiceSearch();
+  //       }
+  //     });
+  
+  //   } else {
+  //     alert('Your browser does not support Speech Recognition.');
+  //     VSB.disabled = true;
+  //   }
+  // </script>
+  
+  
+
+  
+  {% endfor %}
+</body>
+  {% endblock %}

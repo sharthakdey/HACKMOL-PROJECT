@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static',filename='css/teacher-panel.css' ) }}">
+
+<section class="banner">
+  <div class="profile">
+    <img src="{{ url_for('static', filename='img/carousel-2.jpg') }}" alt="Profile Image" class="avatar">
+    <div class="info">
+      <h2>{{ current_user.username }}</h2>
+      <p>Chandigarh</p> <!-- You can make this dynamic too if stored -->
+    </div>
+    <div class="meta">
+      <span>👩‍🏫 Teacher</span>
+      <span>📚 Courses Uploaded: {{ uploads|length }}</span>
+    </div>
+  </div>
+</section>
+
+<section class="content">
+  <div class="card">
+    <h3 style="color: white;">Welcome to Your Panel</h3>
+    <p>Manage courses, assignments, and interact with students easily.</p>
+    <a href="{{ url_for('upload') }}" class="btn btn-light mt-3">Upload New Course</a>
+  </div>
+
+  <div class="uploaded-content mt-4">
+    <h4 style="color: white;">Your Uploaded Content</h4>
+    <ul class="list-group">
+      {% for item in uploads %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ item.subject }}</strong> - {{ item.filename }} ({{ item.filetype }})
+          <small class="text-muted d-block">{{ item.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+        </div>
+        <form method="POST" action="{{ url_for('delete_content', content_id=item.id) }}">
+          <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+        </form>
+      </li>
+      {% else %}
+      <li class="list-group-item">No uploads yet.</li>
+      {% endfor %}
+    </ul>
+    
+  </div>
+</section>
+{% endblock %}
