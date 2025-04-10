@@ -14,12 +14,12 @@
     .container {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 30px;
       position: relative;
     }
 
     .box {
-      padding: 20px;
+      padding: 10px;
       background-color: #222;
       border-radius: 12px;
       position: relative;
@@ -31,12 +31,13 @@
       border-radius: 50%;
       background-color: #bbb;
       position: absolute;
-      top: 10px;
-      left: -100px;
+      top: 8px;
+      left: -98px;
     }
 
     .first-box {
-      margin-left: 60px;
+      margin-left: 90px;
+      margin-right: 60px;
     }
 
     .scroll-timer {
@@ -70,7 +71,7 @@
     }
 
     .label {
-      margin-top: 5px;
+      margin-top: 2px;
       font-size: 16px;
       color: #bbb;
       width: 80px;
@@ -118,140 +119,374 @@
       background-color: red;
       color: white;
     }
+    .timer-flex-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.scroll-timer-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scroll-timer.labels {
+  margin-top: 5px;
+}
+
+.timer-side-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 20px;
+  min-width: 180px;
+}
+.timer-right-aligned {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.scroll-timer-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.right-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 20px;
+  min-width: 180px;
+}
+.timer-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* Optional: make sure timer stays fixed width */
+.timer-right-aligned {
+  flex-shrink: 0;
+}
+.second-box {
+  width: 100%;
+}
+
+.timer-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.text-content {
+  flex: 1;
+  min-width: 250px;
+}
+
+.timer-ui {
+  display: flex;
+  gap: 40px;
+  background: #111;
+  padding: 10px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+.btn.start:hover {
+  background-color: #0f0; /* Bright green */
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+}
+
+.btn.stop:hover {
+  background-color: #f00; /* Bright red */
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+}
+.third-box {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #111;
+  padding: 10px;
+  border-radius: 12px;
+  flex: 1;
+  min-width: 150px;
+}
+
+.inner-div {
+  background-color: #333;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  height: 100px;
+}
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.info-btn {
+  background-color: #444;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.info-btn:hover {
+  background-color: #666;
+  transform: scale(1.05);
+}
+
+.logout {
+  background-color: #d9534f;
+}
+
+.logout:hover {
+  background-color: #c9302c;
+}
+
+
+.first-box,
+.second-box,
+.third-box {
+  margin-bottom: 20px;
+}
+
+.third-box {
+  margin-bottom: 0; /* no space after the last one */
+}
+
+h5{
+  margin: 0;
+  line-height: 1.4; /* optional: adjust vertical spacing */
+}
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.edit-profile {
+  background-color: #28a745;
+}
+
+.edit-profile:hover {
+  background-color: #218838;
+}
+
+
+
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="box first-box" style="height: 120px; width:1275px;">
-      <div class="profile-pic"></div>
-      <p>First box content</p>
-    </div>
-
-    <!-- Second Box - Timer UI -->
-    <div class="box" style="height: auto;">
-      <p>Second box content</p>
-
-      <div class="scroll-timer">
-        <div class="scroll-col" id="hoursCol"></div>
-        <div class="scroll-col" id="minsCol"></div>
-        <div class="scroll-col" id="secsCol"></div>
+  <div class="box first-box" style="height: 100px; width:700px;">
+    <div class="profile-pic"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h3>Student Information</h3>
+        <h5>Name</h5>
+        <h5>Class</h5>
       </div>
-
-      <div class="scroll-timer">
-        <div class="label">Hours</div>
-        <div class="label">Minutes</div>
-        <div class="label">Seconds</div>
-      </div>
-
-      <div id="timerDisplay">00:00:00</div>
-
-      <div class="btns">
-        <button class="btn start" onclick="startTimer()">Start</button>
-        <button class="btn stop" onclick="stopTimer()">Stop</button>
-      </div>
-    </div>
-
-    <!-- Third Box -->
-    <div class="box" style="height: 300px;">
-      <p>Third box content</p>
-      <div id="bookmarkSection">
-        <button id="bookmarkBtn" class="btn">🔖 Bookmark</button>
-        <p id="bookmarkStatus" style="margin-top: 10px;"></p>
+      <div class="button-group">
+        <button class="info-btn edit-profile">Edit Profile</button>
+        <button class="info-btn logout">Logout</button>
       </div>
     </div>
   </div>
+  
 
-  <script>
-    let interval;
-    let timerRunning = false;
+   <!-- Second Box - Timer UI -->
+   <div class="box second-box" style="width: 1206px;">
+    <div class="timer-wrapper">
+      <div class="text-content">
+        <textarea id="userInput" rows="5" style="width: 90%; resize: vertical; padding: 10px; font-size: 16px; border-radius: 8px; border: none; background-color: #111; color: white;"></textarea>
+
+      </div>
   
-    // Focus loss detection
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden && timerRunning) {
-        alert("Timer paused because you left the tab. Please stay on the page.");
-        stopTimer();
-      }
-    });
+      <div class="timer-ui">
+        <div class="scroll-timer-group">
+          <div class="scroll-timer">
+            <div class="scroll-col" id="hoursCol"></div>
+            <div class="scroll-col" id="minsCol"></div>
+            <div class="scroll-col" id="secsCol"></div>
+          </div>
+          <div class="scroll-timer labels">
+            <div class="label">Hours</div>
+            <div class="label">Minutes</div>
+            <div class="label">Seconds</div>
+          </div>
+        </div>
   
-    function startTimer() {
-      stopTimer(); // clear if already running
-      let hours = getSelectedValue(hourCol);
-      let mins = getSelectedValue(minCol);
-      let secs = getSelectedValue(secCol);
-      let totalSeconds = hours * 3600 + mins * 60 + secs;
+        <div class="right-controls">
+          <div id="timerDisplay">00:00:00</div>
+          <div class="btns">
+            <button class="btn start" onclick="startTimer()">Start</button>
+            <button class="btn stop" onclick="stopTimer()">Stop</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   
-      if (totalSeconds <= 0) return;
-  
-      timerRunning = true;
-  
-      interval = setInterval(() => {
-        if (totalSeconds <= 0) {
-          clearInterval(interval);
-          timerRunning = false;
-          alert("Time's up!");
-          return;
-        }
-  
-        totalSeconds--;
-  
-        const h = Math.floor(totalSeconds / 3600);
-        const m = Math.floor((totalSeconds % 3600) / 60);
-        const s = totalSeconds % 60;
-  
-        document.getElementById("timerDisplay").textContent =
-          `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-      }, 1000);
+
+
+
+    <!-- Third Box -->
+    <!-- Third Box -->
+    <div class="box third-box">
+      {% for content in all_content %}
+        <div class="column">
+          <div class="inner-div">
+            <h5>{{ content.subject }} - {{ content.filetype }}</h5>
+            <p>{{ content.content }}</p>
+    
+            {% if content.id in bookmarked_ids %}
+              <span style="color: gold;">★ Bookmarked</span>
+            {% else %}
+              <form action="{{ url_for('add_bookmark', content_id=content.id) }}" method="post">
+                <button type="submit" class="info-btn">☆ Add Bookmark</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    
+
+
+<script>
+  const hourCol = document.getElementById("hoursCol");
+  const minCol = document.getElementById("minsCol");
+  const secCol = document.getElementById("secsCol");
+  const itemHeight = 40;
+  let interval;
+
+  function fillColumn(col, max) {
+    const highlight = document.createElement("div");
+    highlight.className = "highlight-line";
+    col.appendChild(highlight);
+
+    const padTop = document.createElement("div");
+    padTop.className = "scroll-item";
+    padTop.innerText = '';
+    col.appendChild(padTop);
+
+    for (let i = 0; i < max; i++) {
+      const div = document.createElement("div");
+      div.className = "scroll-item";
+      div.innerText = String(i).padStart(2, '0');
+      col.appendChild(div);
     }
-  
-    function stopTimer() {
-      clearInterval(interval);
-      timerRunning = false;
-    }
-  
-    // Optional: warn before closing tab or refreshing
-    window.addEventListener("beforeunload", function (e) {
-      if (timerRunning) {
-        e.preventDefault();
-        e.returnValue = "Timer is still running. Are you sure you want to leave?";
-      }
-    });
 
-
-
-    let isBookmarked = false;
-
-document.getElementById("bookmarkBtn").addEventListener("click", function () {
-  isBookmarked = !isBookmarked;
-  
-  const btn = document.getElementById("bookmarkBtn");
-  const status = document.getElementById("bookmarkStatus");
-
-  if (isBookmarked) {
-    btn.textContent = "❌ Unbookmark";
-    status.textContent = "✅ This session is bookmarked.";
-  } else {
-    btn.textContent = "🔖 Bookmark";
-    status.textContent = "⚠️ Bookmark removed.";
+    const padBottom = document.createElement("div");
+    padBottom.className = "scroll-item";
+    padBottom.innerText = '';
+    col.appendChild(padBottom);
   }
 
-  // Optional: Save to localStorage if you want persistence across reloads
-  localStorage.setItem("bookmarkStudentTimer", isBookmarked);
-});
-
-// Load bookmark state on page load
-window.onload = function () {
-  const stored = localStorage.getItem("bookmarkStudentTimer");
-  if (stored === "true") {
-    isBookmarked = true;
-    document.getElementById("bookmarkBtn").textContent = "❌ Unbookmark";
-    document.getElementById("bookmarkStatus").textContent = "✅ This session is bookmarked.";
+  function getSelectedValue(col) {
+    const index = Math.round(col.scrollTop / itemHeight);
+    const value = col.querySelectorAll(".scroll-item")[index + 1];
+    return parseInt(value?.innerText) || 0;
   }
-};
-  </script>
-  
-  
 
-  </script>
+  function scrollToNearest(col) {
+    const index = Math.round(col.scrollTop / itemHeight);
+    col.scrollTo({ top: index * itemHeight, behavior: 'smooth' });
+  }
+
+  function handleScroll(col) {
+    let timeout;
+    col.addEventListener('scroll', () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        scrollToNearest(col);
+        updateSelectedTime();
+      }, 100);
+    });
+  }
+
+  function updateSelectedTime() {
+    const h = getSelectedValue(hourCol);
+    const m = getSelectedValue(minCol);
+    const s = getSelectedValue(secCol);
+    document.getElementById("timerDisplay").textContent =
+      ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')};
+  }
+
+  function startTimer() {
+    stopTimer();
+    let hours = getSelectedValue(hourCol);
+    let mins = getSelectedValue(minCol);
+    let secs = getSelectedValue(secCol);
+    let totalSeconds = hours * 3600 + mins * 60 + secs;
+
+    interval = setInterval(() => {
+      if (totalSeconds <= 0) {
+        clearInterval(interval);
+        return;
+      }
+      totalSeconds--;
+
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+
+      document.getElementById("timerDisplay").textContent =
+        ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')};
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(interval);
+  }
+
+  fillColumn(hourCol, 24);
+  fillColumn(minCol, 60);
+  fillColumn(secCol, 60);
+
+  [hourCol, minCol, secCol].forEach(col => {
+    col.scrollTop = itemHeight;
+    handleScroll(col);
+  });
+
+  // WORD LIMIT CHECK (Max 50 words)
+  const textarea = document.getElementById("userInput");
+  textarea.addEventListener("input", () => {
+    const words = textarea.value.trim().split(/\s+/).filter(word => word.length > 0);
+    if (words.length > 50) {
+      alert("Word limit exceeded! Maximum 50 words allowed.");
+      textarea.value = words.slice(0, 50).join(" ");
+    }
+  });
+</script>
+
 </body>
 </html>

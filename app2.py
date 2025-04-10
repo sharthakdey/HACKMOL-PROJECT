@@ -94,27 +94,26 @@ def signup():
     return render_template("signup.html")
 
 
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
+        email = request.form["email"]
+        password = request.form["password"]
 
-        user_data = User.query.filter_by(email=email).first()
-        if user_data and user_data.check_hash_password(password):
+        user_data = User.query.filter_by(email=email).first()  # ✅ always define it here
+
+        if user_data and check_password_hash(user_data.password_hash, password):
             login_user(user_data)
-            flash("User logged in successfully")
-
-            if user_data.role == "teacher":  
-                return redirect(url_for("admin_panel"))
+            # if user_data.role == "admin":
             return redirect(url_for("index"))
+            # elif user_data.role == "admin":
+            #     return redirect(url_for("admin_dashboard"))
+            # else:
+            # return redirect(url_for("index"))
         else:
-            flash("Invalid email or password")
-            return redirect(url_for("login"))
+            flash("Invalid email or password", "error")
 
     return render_template("login.html")
-
 
 
 @app.route("/")
@@ -122,7 +121,7 @@ def index():
     return render_template("index.html")
 
 class Contact(db.Model):
-    __tablename__ = "contact"
+    _tablename_ = "contact"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     email = db.Column(db.String(200))
@@ -152,7 +151,14 @@ def about():
 def courses():
     return render_template("courses.html")
 
-
+# @app.route("/single_course")
+# def single_course():
+#     subject = request.args.get('subject', 'Math')  # default subject
+#     videos = CourseContent.query.filter_by(subject=subject, filetype='video').all()
+#     pdfs = CourseContent.query.filter_by(subject=subject, filetype='pdf').all()
+    
+#     paired_content = list(zip(videos, pdfs))  # pairs video with pdf in order
+#     return render_template("single_course.html", subject=subject, paired_content=paired_content)
 
 # @app.route("/single_course")
 # def single_course():
@@ -177,8 +183,9 @@ def single_course():
     if search_query:
         videos = [v for v in videos if search_query in (v.content or '').lower()]
 
-    paired_content = list(zip(videos, pdfs))
+    paired_content = list(zip (videos, pdfs))
     return render_template("single_course.html", subject=subject, paired_content=paired_content)
+
 @app.route("/team")
 def team():
     return render_template("team.html")
@@ -196,6 +203,7 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 @app.route('/upload', methods=['GET', 'POST'])
+@role_required("admin")
 @login_required
 def upload():
     if request.method == 'POST':
@@ -239,10 +247,12 @@ def upload():
             db.session.add(course_pdf)
 
         db.session.commit()
-        flash("Files uploaded successfully.")
-        return redirect(url_for("courses"))
+        flash("Content uploaded successfully.", "success")
+        return redirect(url_for('upload'))
 
     return render_template("upload.html")
+
+    
 
 @app.route('/play/<filename>')
 @login_required
@@ -260,9 +270,173 @@ def play_video(filename):
 
     return render_template('play_video.html', video_filename=filename, transcript=transcript)
 
+@app.route("/add_bookmark/<int:content_id>", methods=["POST"])
+@login_required
+def add_bookmark(content_id):
+    existing = Bookmark.query.filter_by(user_id=current_user.id, content_id=content_id).first()
+    if not existing:
+        new_bookmark = Bookmark(user_id=current_user.id, content_id=content_id)
+        db.session.add(new_bookmark)
+        db.session.commit()
+        flash("Bookmark added successfully!")
+    else:
+        flash("Already bookmarked!")
+    return redirect(url_for("student_dashboard"))
 
 
+@app.route('/convert_to_audio', methods=['POST'])
+def convert_to_audio():
+    pdf_filename = request.form.get('pdf_filename')
+    if not pdf_filename:
+        return "No PDF filename provided", 400
 
+    pdf_path = os.path.join(app.config['UPLOAD_FOLDER'], pdf_filename)
+
+    if not os.path.exists(pdf_path):
+        return "PDF not found", 404
+
+    try:
+        reader = PdfReader(pdf_path)
+        text = ""
+        for page in reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+    except Exception as e:
+        return f"Error reading PDF: {e}", 500
+
+    if not text.strip():
+        return "No readable text found in PDF", 400
+
+    # Convert text to speech
+    try:
+        audio_id = str(uuid.uuid4())
+        audio_path = os.path.join("static/audio", f"{audio_id}.mp3")
+        os.makedirs(os.path.dirname(audio_path), exist_ok=True)
+
+        tts = gTTS(text)
+        tts.save(audio_path)
+
+        # ✅ Directly return audio file for playback/download
+        return send_file(audio_path, as_attachment=True)
+
+    except Exception as e:
+        return f"Error generating audio: {e}", 500
+
+# @app.route('/generate_subtitles/<filename>', methods=['GET'])
+# @login_required
+# def generate_subtitles(filename):
+#     video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+#     if not os.path.exists(video_path):
+#         return "Video not found", 404
+
+#     # Step 1: Extract audio
+#     from moviepy.editor import VideoFileClip
+#     audio_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{filename}.mp3")
+#     clip = VideoFileClip(video_path)
+#     clip.audio.write_audiofile(audio_path)
+
+#     # Step 2: Upload to AssemblyAI
+#     def upload_to_assemblyai(audio_file):
+#         headers = {'authorization': 'YOUR_ASSEMBLYAI_API_KEY'}
+#         with open(audio_file, 'rb') as f:
+#             response = requests.post(
+#                 'https://api.assemblyai.com/v2/upload',
+#                 headers=headers,
+#                 files={'file': f}
+#             )
+#         return response.json()['upload_url']
+
+#     audio_url = upload_to_assemblyai(audio_path)
+
+#     # Step 3: Transcribe and save subtitles
+#     words = transcribe_audio(audio_url)  # From your assembly_utilis.py
+
+#     # Step 4: Save subtitle JSON
+#     json_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{filename}.json")
+#     with open(json_path, 'w') as f:
+#         import json
+#         json.dump(words, f)
+
+#     return "Subtitles generated successfully"
+
+# @app.route("/get_subtitles/<filename>")
+# def get_subtitles(filename):
+#     subtitle_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{filename}.json")
+#     if os.path.exists(subtitle_path):
+#         with open(subtitle_path, "r") as f:
+#             return f.read(), 200, {'Content-Type': 'application/json'}
+#     else:
+#         return {"error": "Subtitles not found"}, 404
+
+
+# UPLOAD_FOLDER = 'static/uploads'
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# ASSEMBLYAI_API_KEY = 'defb938386194db1850a245aeab5954e'
+
+
+# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# # transcribed_words = []
+
+# def transcribe_audio(audio_path, ASSEMBLYAI_API_KEY):
+#     headers = {'authorization': ASSEMBLYAI_API_KEY}
+
+#     with open(audio_path, 'rb') as f:
+#         upload_response = requests.post(
+#             'https://api.assemblyai.com/v2/upload',
+#             headers=headers,
+#             data=f
+#         )
+
+#     if upload_response.status_code != 200:
+#         print("❌ Upload Failed:", upload_response.text)
+#         return None
+
+#     audio_url = upload_response.json().get('upload_url', '')
+
+#     transcript_request = {
+#         "audio_url": audio_url,
+#         "language_code": "hi",          # Optional: only if you're using Hindi
+#         "punctuate": True,
+#         "format_text": True,
+#         "speaker_labels": False,
+#         "word_boost": [],
+#         "boost_param": "low",
+#         "auto_chapters": False,
+#         "iab_categories": False,
+#         "entity_detection": False
+#     }
+
+#     transcript_response = requests.post(
+#         'https://api.assemblyai.com/v2/transcript',
+#         json=transcript_request,
+#         headers=headers
+#     )
+
+#     if transcript_response.status_code != 200:
+#         print("❌ Transcription Request Failed:", transcript_response.text)
+#         return None
+
+#     transcript_id = transcript_response.json().get('id', '')
+
+#     while True:
+#         polling_response = requests.get(
+#             f'https://api.assemblyai.com/v2/transcript/{transcript_id}',
+#             headers=headers
+#         )
+#         polling_data = polling_response.json()
+
+#         if polling_data.get('status') == 'completed':
+#             print("✅ Transcription Success:", polling_data)  # Debugging print
+#             return polling_data.get('words', [])  # Return words with timestamps
+#         elif polling_data.get('status') == 'error':
+#             print("❌ Transcription Error:", polling_data.get('error', 'Unknown error'))
+#             return None
+
+#         time.sleep(3)
+#         print("🟡 AssemblyAI Transcription Raw Response:", polling_data)
+#         print("🟡 Full Response from AssemblyAI:", polling_data)
 
 @app.route("/base")
 def base():
@@ -298,22 +472,40 @@ def serve_wow(filename):
 def forgot():
     return render_template("forgot.html")
 
-@app.route("/teacher")
+@app.route("/teacher", methods=["GET", "POST"])
 @login_required
 @role_required("admin")
 def teacher():
-    uploads = CourseContent.query.filter_by(uploader=current_user.email).all()
-    return render_template("teacher.html", uploads=uploads)
+    if request.method == "POST":
+        file = request.files["file"]
+        content_type = request.form["content_type"]
+        description = request.form["description"]
+
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        file.save(file_path)
+
+        content = CourseContent(
+            filename=filename,
+            content_type=content_type,
+            description=description,
+            uploader=current_user,
+        )
+        db.session.add(content)
+        db.session.commit()
+        return redirect(url_for("view_course"))
+
+    return render_template("teacher.html")
 
 @app.route("/delete_content/<int:content_id>", methods=["POST"])
 @login_required
-@role_required("teacher")
+@role_required("admin")
 def delete_content(content_id):
     content = CourseContent.query.get_or_404(content_id)
     # Ensure the current user owns the content
     if content.uploader != current_user.email:
         flash("Unauthorized action!", "danger")
-        return redirect(url_for("teacher"))
+        return redirect(url_for("index"))
     # Optional: Delete the actual file from storage if needed
     file_path = os.path.join(app.config["UPLOAD_FOLDER"], content.filename)
     if os.path.exists(file_path):
@@ -324,45 +516,84 @@ def delete_content(content_id):
     flash("Content deleted successfully!", "success")
     return redirect(url_for("teacher"))
 
-
 @app.route("/student")
-def student_timer():
-    return render_template("student.html")
+@login_required
+@role_required("user")
+def student_dashboard():
+    all_content = CourseContent.query.all()
+    user_bookmarks = Bookmark.query.filter_by(user_id=current_user.id).all()
+    bookmarked_ids = {b.content_id for b in user_bookmarks}
+
+    return render_template("student.html", all_content=all_content, bookmarked_ids=bookmarked_ids)
 
 
+
+
+# class Bookmark(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     user = db.Column(db.String(150))
+#     video_id = db.Column(db.Integer)
+#     pdf_id = db.Column(db.Integer)
+#     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Bookmark(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user = db.Column(db.String(150))
-    video_id = db.Column(db.Integer)
-    pdf_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    content_id = db.Column(db.Integer, db.ForeignKey('course_content.id'))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    
-@app.route('/bookmark', methods=['POST'])
-def bookmark_content():
-    video_id = request.form.get('video_id')
-    pdf_id = request.form.get('pdf_id')
-    user = current_user.username  # or however you're tracking users
 
-    # save bookmark to DB (you must have a bookmarks table)
-    bookmark = Bookmark(video_id=video_id, pdf_id=pdf_id, user=user)
+    user = db.relationship('User', backref='bookmarks')
+    content = db.relationship('CourseContent', backref='bookmarked_by')
+
+    
+# @app.route('/bookmark', methods=['POST'])
+# def bookmark_content():
+#     video_id = request.form.get('video_id')
+#     pdf_id = request.form.get('pdf_id')
+#     user = current_user.username  # or however you're tracking users
+
+#     # save bookmark to DB (you must have a bookmarks table)
+#     bookmark = Bookmark(video_id=video_id, pdf_id=pdf_id, user=user)
+#     db.session.add(bookmark)
+#     db.session.commit()
+
+#     flash('Content bookmarked!')
+#     return redirect(request.referrer)
+
+@app.route('/bookmark', methods=['POST'])
+@login_required
+def bookmark_content():
+    content_id = request.form.get('content_id')
+
+    # Check if content exists
+    content = CourseContent.query.get(content_id)
+    if not content:
+        flash("Content not found.", "error")
+        return redirect("single_course")
+
+    # Check if already bookmarked
+    existing = Bookmark.query.filter_by(user_id=current_user.id, content_id=content.id).first()
+    if existing:
+        flash("Already bookmarked.", "info")
+        return redirect('single_course')
+
+    # Save bookmark
+    bookmark = Bookmark(user_id=current_user.id, content_id=content.id)
     db.session.add(bookmark)
     db.session.commit()
 
-    flash('Content bookmarked!')
-    return redirect(request.referrer)
+    flash('Content bookmarked!', "success")
+    return redirect('single_courses')
+
+
 
 with app.app_context():
     db.create_all()
-    if not User.query.filter_by(email="teacher@gmail.com").first():
-        teacher = User(username="teacher", email="teacher@gmail.com", role="admin")
-        teacher.save_hash_password('teacher')
-        db.session.add(teacher)
-        db.session.commit()
+    # if not User.query.filter_by(email="teacher@gmail.com").first():
+    #     teacher = User(username="teacher", email="teacher@gmail.com", role="teacher")
+    #     teacher.save_hash_password('teacher')
+    #     db.session.add(teacher)
+    #     db.session.commit()
 
 if __name__ == "__main__":
     app.run(debug=True)
-    
-    
-
-
