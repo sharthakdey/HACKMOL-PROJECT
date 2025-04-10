@@ -12,10 +12,9 @@ from gtts import gTTS
 import uuid
 import requests
 import time
-import requests
-import time
 import os
-
+from bs4 import BeautifulSoup
+import json
 
 
 app=Flask(__name__)
@@ -23,6 +22,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SECRET_KEY"] = "welcome"
 
 db = SQLAlchemy(app)
+
+API_KEY = "AIzaSyCcT4Ncr-vVVb6GZEvNlkLXnmDWSLbiS4E"
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -323,121 +324,6 @@ def convert_to_audio():
     except Exception as e:
         return f"Error generating audio: {e}", 500
 
-# @app.route('/generate_subtitles/<filename>', methods=['GET'])
-# @login_required
-# def generate_subtitles(filename):
-#     video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-
-#     if not os.path.exists(video_path):
-#         return "Video not found", 404
-
-#     # Step 1: Extract audio
-#     from moviepy.editor import VideoFileClip
-#     audio_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{filename}.mp3")
-#     clip = VideoFileClip(video_path)
-#     clip.audio.write_audiofile(audio_path)
-
-#     # Step 2: Upload to AssemblyAI
-#     def upload_to_assemblyai(audio_file):
-#         headers = {'authorization': 'YOUR_ASSEMBLYAI_API_KEY'}
-#         with open(audio_file, 'rb') as f:
-#             response = requests.post(
-#                 'https://api.assemblyai.com/v2/upload',
-#                 headers=headers,
-#                 files={'file': f}
-#             )
-#         return response.json()['upload_url']
-
-#     audio_url = upload_to_assemblyai(audio_path)
-
-#     # Step 3: Transcribe and save subtitles
-#     words = transcribe_audio(audio_url)  # From your assembly_utilis.py
-
-#     # Step 4: Save subtitle JSON
-#     json_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{filename}.json")
-#     with open(json_path, 'w') as f:
-#         import json
-#         json.dump(words, f)
-
-#     return "Subtitles generated successfully"
-
-# @app.route("/get_subtitles/<filename>")
-# def get_subtitles(filename):
-#     subtitle_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{filename}.json")
-#     if os.path.exists(subtitle_path):
-#         with open(subtitle_path, "r") as f:
-#             return f.read(), 200, {'Content-Type': 'application/json'}
-#     else:
-#         return {"error": "Subtitles not found"}, 404
-
-
-# UPLOAD_FOLDER = 'static/uploads'
-# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# ASSEMBLYAI_API_KEY = 'defb938386194db1850a245aeab5954e'
-
-
-# os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-# # transcribed_words = []
-
-# def transcribe_audio(audio_path, ASSEMBLYAI_API_KEY):
-#     headers = {'authorization': ASSEMBLYAI_API_KEY}
-
-#     with open(audio_path, 'rb') as f:
-#         upload_response = requests.post(
-#             'https://api.assemblyai.com/v2/upload',
-#             headers=headers,
-#             data=f
-#         )
-
-#     if upload_response.status_code != 200:
-#         print("❌ Upload Failed:", upload_response.text)
-#         return None
-
-#     audio_url = upload_response.json().get('upload_url', '')
-
-#     transcript_request = {
-#         "audio_url": audio_url,
-#         "language_code": "hi",          # Optional: only if you're using Hindi
-#         "punctuate": True,
-#         "format_text": True,
-#         "speaker_labels": False,
-#         "word_boost": [],
-#         "boost_param": "low",
-#         "auto_chapters": False,
-#         "iab_categories": False,
-#         "entity_detection": False
-#     }
-
-#     transcript_response = requests.post(
-#         'https://api.assemblyai.com/v2/transcript',
-#         json=transcript_request,
-#         headers=headers
-#     )
-
-#     if transcript_response.status_code != 200:
-#         print("❌ Transcription Request Failed:", transcript_response.text)
-#         return None
-
-#     transcript_id = transcript_response.json().get('id', '')
-
-#     while True:
-#         polling_response = requests.get(
-#             f'https://api.assemblyai.com/v2/transcript/{transcript_id}',
-#             headers=headers
-#         )
-#         polling_data = polling_response.json()
-
-#         if polling_data.get('status') == 'completed':
-#             print("✅ Transcription Success:", polling_data)  # Debugging print
-#             return polling_data.get('words', [])  # Return words with timestamps
-#         elif polling_data.get('status') == 'error':
-#             print("❌ Transcription Error:", polling_data.get('error', 'Unknown error'))
-#             return None
-
-#         time.sleep(3)
-#         print("🟡 AssemblyAI Transcription Raw Response:", polling_data)
-#         print("🟡 Full Response from AssemblyAI:", polling_data)
-
 @app.route("/base")
 def base():
     return render_template("base.html")
@@ -527,7 +413,23 @@ def student_dashboard():
     return render_template("student.html", all_content=all_content, bookmarked_ids=bookmarked_ids)
 
 
+@app.route('/upload_pdf', methods=['GET', 'POST'])
+def upload_pdf():
+    if request.method == 'POST':
+        pdf_file = request.files['pdf']
+        if pdf_file:
+            pdf_path = f"static/uploads/{pdf_file.filename}"
+            pdf_file.save(pdf_path)
 
+            # Extract text
+            doc = fitz.open(pdf_path)
+            full_text = ""
+            for page in doc:
+                full_text += page.get_text()
+            doc.close()
+
+            return render_template('upload_pdf.html', content=full_text)
+    return render_template('upload_pdf.html')
 
 # class Bookmark(db.Model):
 #     id = db.Column(db.Integer, primary_key=True)
@@ -560,6 +462,8 @@ class Bookmark(db.Model):
 #     flash('Content bookmarked!')
 #     return redirect(request.referrer)
 
+
+
 @app.route('/bookmark', methods=['POST'])
 @login_required
 def bookmark_content():
@@ -585,6 +489,56 @@ def bookmark_content():
     flash('Content bookmarked!', "success")
     return redirect('single_courses')
 
+
+def ask_gemini(prompt):
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
+    
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    data = {
+        "contents": [
+            {
+                "parts": [
+                    {"text": prompt}
+                ]
+            }
+        ]
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    result = response.json()
+    
+    try:
+        return result['candidates'][0]['content']['parts'][0]['text']
+    except KeyError:
+        return f"❌ Error: {result}"
+
+def get_all_text(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    return soup.get_text(separator=' ', strip=True)
+
+
+@app.route('/fetch_article', methods=['GET', 'POST'])
+def fetch_article():
+    if request.method == 'POST':
+        article_url = request.form.get('url')
+        if not article_url:
+            return "Please provide a URL.", 400
+
+        try:
+            article_text = get_all_text(article_url)
+            prompt = f"Give all the content well structured about the article:\n---\n{article_text}"
+            structured_text = ask_gemini(prompt)
+
+            return render_template("upload_pdf.html", article_content=structured_text, url=article_url)
+
+        except Exception as e:
+            return f"❌ Failed to process the article: {e}", 500
+
+    return render_template("upload_pdf.html", article_content=None)
 
 
 with app.app_context():
