@@ -15,6 +15,7 @@ import time
 import os
 from bs4 import BeautifulSoup
 import json
+# import fitz
 
 
 app=Flask(__name__)
@@ -248,7 +249,7 @@ def upload():
 
         db.session.commit()
         flash("Content uploaded successfully.", "success")
-        return redirect(url_for('upload'))
+        return redirect(url_for('courses'))
 
     return render_template("upload.html")
 
