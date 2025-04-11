@@ -54,8 +54,7 @@ class CourseContent(db.Model):
     content = db.Column(db.Text)  # 💥 NEW FIELD for description
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    
-    
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
